@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p>url: <b>./order/<%= info.url %></b></p>
+    <h1>Welcome!</h1>
+    <form action="deliver" method="post">
+        <div class="option">
+            <lable for="tableID">Table:</lable>
+            <input name="tableID" id="tableID" value="<%= info.id %>" readonly/>
+        </div>
+        
+        <div class="option">
+            <lable for="payment">Payment:</lable>
+            <input type="number" name="payment" id="payment"/>
+        </div>
+        <button type="submit">Deliver</button>
+    </form>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .option {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin: 10px;
+            font-size: 30px; 
+        }
+        lable {
+            margin-right: 10px;
+        }
+        input:read-only {
+            border: none;
+            color: black;
+            width: 20px;
+        }
+
+        input {
+            height: 100%;
+            width: 100px;
+            font-size: 30px;
+            border: 1px solid black;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        button {
+            font-size: 30px;
+            border: 1px solid black;
+            border-radius: 10px;
+            width: 250px;
+            background-color: dodgerblue;
+            color: white;
+        }
+    </style>
+</body>
+</html>
