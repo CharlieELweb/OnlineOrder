@@ -14,5 +14,5 @@
 `npm install -D nodemon`
 
 9. Put your sheet ID in index.js(Where says"Put your code HERE")
-10. Use `nodemon index.js` to run the code. And you can get the website at `127.0.0.1:1337`
+11. Use `nodemon index.js` to run the code. And you can get the website at `127.0.0.1:5050`
 
