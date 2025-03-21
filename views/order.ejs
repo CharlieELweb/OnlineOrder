@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Welcome!</h1>
+    <h2>Table <%= info.tableID %></h2>
+    <form action="/submit">
+        <input type="hidden" id="key" name="key" value="<%= info.key %>" >
+        <input type="hidden" id="token" name="token" value="<%= info.token %>" >
+        <input type="hidden" id="tableID" name="tableID" value="<%= info.tableID %>" >
+        <div class="option">
+            <input type="checkbox" id="dish1" name="dish1" value="Fish ">
+            <label for="dish1">Fish</label><br>
+        </div>
+        <div class="option">
+            <input type="checkbox" id="dish2" name="dish2" value="Duck ">
+            <label for="dish2">Duck</label><br>
+        </div>
+        <div class="option">
+            <input type="checkbox" id="dish3" name="dish3" value="Poop ">
+            <label for="dish3">Poop</label><br>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+      
+
+    <style>
+        .option {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="checkbox"]  {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  font-size: 2rem;
+  padding: 0.1rem;
+  border: 0.25rem solid dodgerblue;
+  border-radius: 0.5rem;
+        }
+        input[type="checkbox"]::before {
+  content: "";
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.2rem;
+  fill: dodgerblue;
+
+  transform: scale(0);
+  transition: all 0.2s ease-in-out;
+  background-color: dodgerblue;
+        }
+        input[type="checkbox"]:checked::before {
+  transform: scale(0.8)
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 500px;
+            gap: 20px;
+        }
+        label {
+            font-size: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+        }
+        p {
+            font-size: 14px;
+            color: grey;
+            font-family: Arial, Helvetica, sans-serif
+        }
+
+        button {
+            font-size: 30px;
+            border: 1px solid black;
+            border-radius: 10px;
+            width: 250px;
+            background-color: dodgerblue;
+            color: white;
+        }
+    </style>
+</body>
+</html>

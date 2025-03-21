@@ -1,0 +1,27 @@
+<h1>Submitted!</h1>
+
+<p>Original url: <b><%= info.rootUrl %>/order/<%= info.url %></b>
+</p>
+<p>Salt: <b><%= info.hashSalt %></b>
+    </p>
+<p>Hashed url: <b><%= info.rootUrl %>/order/<%= info.hashUrl %></b>
+</p>
+
+<p>QR Code: <br />
+    <div id="qrcode"></div>
+</p>
+
+
+<a href="/admin">Back to Admin</a>
+
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script>
+    const qrcode = new QRCode(document.getElementById('qrcode'), {
+        text: '<%= info.rootUrl %>/order/<%= info.hashUrl %>?token=<%= info.token %>&key=<%= info.key %>',
+        width: 300,
+        height: 300,
+        colorDark : '#000',
+        colorLight : '#fff',
+        correctLevel : QRCode.CorrectLevel.H
+    });
+</script>
