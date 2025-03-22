@@ -4,7 +4,8 @@
   "description": "0. Download NPM and NodeJS 1. Get Google API Credentials at [Google Cloud Website](https://console.cloud.google.com) 2. Create a new project and enable Google Sheet API. 3. Create Credentials in \"Credentials\" tab and choose Service account. 4. Copy the **email** of the Service Account. 5. Add a **json** key, web will download a file. Rename it to \"**credentials.json**\" and put it in a new folder. 6. Create a new sheet and share it to **email** you copied(make sure to enable EDIT) 7. download all the files of this repository to your new folder. 8. Open Terminal and input codes below",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -17,9 +18,12 @@
   },
   "homepage": "https://github.com/CharlieELweb/OnlineOrder#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
-    "googleapis": "^148.0.0"
+    "googleapis": "^148.0.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
