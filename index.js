@@ -1,17 +1,14 @@
-const rootURL = "127.0.0.1:5050";
+const rootURL = "127.0.0.1:5050"
 
 let jwtSecretKey = "Th1sis$ecr3t";
-const spreadsheetId = ""; /* Enter your Sheet ID HERE */
-const saltRounds = 10; /* 10-12 for best results */
+const spreadsheetId = "1_6XbDkCsunE8HQW3nouS9AHyStRrNTJaBqQ6QctXKog"; /* Enter your Sheet ID HERE */
+const saltRounds = 5; /* 10-12 for best results */
 
 const keyFilePosition = "credentials.json";
 const bcrypt = require('bcrypt');
 const express = require("express");
 const {google} = require("googleapis");
 const dotenv = require('dotenv');
-const geolib = require('geolib');
-const axios = require('axios');
-const cookieParser = require('cookie-parser');
 
  
 
@@ -22,18 +19,10 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-const restaurantLocation = {
-    latitude: 22.432792,
-    longitude: 114.241867,
-    geofenceRadius: 100,
-
-}
 
 /* Functions */
 
-// Get Google Sheet(Database) Information
+
 async function InitGoogleSheet() {
     const auth = new google.auth.GoogleAuth({
         keyFile: keyFilePosition,
@@ -46,11 +35,10 @@ async function InitGoogleSheet() {
     return {auth, googleSheets};
 }
 
-/* Read data form Database */
-async function GetData(dataRange) { // dataRange e.g. "Sheet1!A:A"
+async function GetData(dataRange) { // e.g. "Sheet1!A:A"
     const {auth, googleSheets} = await InitGoogleSheet();
 
-    const metaData = await googleSheets.spreadsheets.get({ // For Debug Usage
+    const metaData = await googleSheets.spreadsheets.get({
         auth,
         spreadsheetId,
     });
@@ -63,7 +51,6 @@ async function GetData(dataRange) { // dataRange e.g. "Sheet1!A:A"
     return getRows.data.values;
 }
 
-//
 async function UpdateData(dataRange, dataValues) {
     const {auth, googleSheets} = await InitGoogleSheet();
 
@@ -80,75 +67,72 @@ async function UpdateData(dataRange, dataValues) {
     
 }
 
-async function ValidateLocation(latitude, longitude) {
-    try {
-        // Basic coordinate validation
-        if (!latitude || !longitude || 
-            latitude < -90 || latitude > 90 || 
-            longitude < -180 || longitude > 180) {
-            return {
-                isValid: false,
-                message: 'Invalid coordinates provided'
-            };
-        }
-       
-        const distance = geolib.getDistance(
-            { latitude, longitude },
-            { 
-                latitude: restaurantLocation.latitude, 
-                longitude: restaurantLocation.longitude 
-            }
-        );
+function insideGeofenceCallBack(){
+    console.log("WE ARE INSIDE THE FENCE!");
+  }
 
-        const ALLOWED_RADIUS = restaurantLocation.geofenceRadius || 100; // meters
-        
-        const valid = parseFloat(distance) <= parseFloat(ALLOWED_RADIUS);
-        console.log("dis>>", distance, ALLOWED_RADIUS, valid);
-        return {
-            isValid: valid,
-            message: valid 
-                ? 'Location verified'
-                : 'You must be inside the restaurant to place an order'
-        };
-    } catch (error) {
-        throw new Error(`Location validation failed: ${error.message}`);
-    }
+async function getCurrentLocation() {
+    let items = [
+      "Hayward, CA",
+      "San Jose, CA",
+      "41.43206,-81.38992",
+      "San Francisco, CA"
+    ];
+  
+    // Return a random value
+    var item = items[Math.floor(Math.random() * items.length)];
+    return item;
+  }
+
+function CheckPosition() {
+let options = {
+    // You can get it from here: https://cloud.google.com/maps-platform/
+    apiKey: "AIzaSyAt4n8l4OI7f3ZxiD7luN-kSb9f1aDg3q0", // Enter your own api key
+    updateInterval: 5,  // Update current location (in seconds)
+    
+    // API function to get the current location.
+    // It should return a string that is an address or lat/long
+    // See Google's Distance Matrix API:
+    // https://developers.google.com/maps/documentation/distance-matrix/intro
+    getCurrentLocation: getCurrentLocation,
+    
+    // Callback for when we are inside the fence (optional)
+    insideGeofenceCallBack: insideGeofenceCallBack,
+    
+    // Callback function to be called whenever the 
+    // current location and distance is updated (optional)
+    // updateDistanceCallBack: updateDistanceCallBack,
+    
+    loopForever: false,  // Stop/continue once we are inside the fence
+    
+    activateFenceOn: "duration", // 'duration' OR 'distance' OR 'either'
+    fenceDurationValue: 25 * 60, // range of the fence in seconds
+    fenceDistanceValue: 1000, // range of the fence in meters
+    };
+    
+    let locationSepc = {
+    destination: "Oakland, CA", // Can be address or lat/long
+    mode: "driving" //
+    };
+
+    var geofence = require("geofence")(options, locationSepc);
+
+    geofence.start(options);
+      
 }
-
-function SetCookie(cname, cvalie, expiredMin, res) {
-    let options = {
-        maxAge: 1000 * 60 * expiredMin, // Expire In `expiredMin` minutes
-    }
-    res.cookie(cname, cvalie, options)
-}
-
-function DeniedAccessWithMessage(message, res) {
-    res.send(`<h1>Access Denied</h1><h2>${message}</h2>`);
-}
-
-function TryDecodeToken(token, res) {
-    try {
-        const decode = jwt.verify(token, jwtSecretKey);
-        return decode;
-    } catch(err) {
-        console.log(err);
-        let message = "";
-        if(err.message == "jwt expired") {
-            message = "Validity Expired.";
-        } else if (err.message == "jwt must be provided") {
-            message = "Token is Empty.";
-        } else if (err.message == "invalid signature") {
-            message = "Invalid Token.";
-        }
-        DeniedAccessWithMessage(message, res);
-        return null;
-    }
-}
-
 /* Get Views */
 
 app.get("/", (req, res) => {
     res.render("index");
+});
+
+
+app.get("/geo", async (req, res) => {
+    CheckPosition();
+});
+
+app.get("/form", async (req, res) => {
+    res.render("form");
 });
 
 app.get("/delete", async (req, res) => {
@@ -172,10 +156,10 @@ app.get("/admin", async (req, res) => {
     res.render("admin", {info});
 });
 
-app.get("/submit", async (req, res) => {
-    const cookie = req.cookies;
-    const token = cookie.token;
-
+app.post("/submit", async (req, res) => {
+    const id = req.params.id;
+    const key = req.query.key;
+    const token = req.query.token;
     const dish1 = req.query.dish1;
     const dish2 = req.query.dish2;
     const dish3 = req.query.dish3;
@@ -186,104 +170,73 @@ app.get("/submit", async (req, res) => {
 
     const tableID = req.query.tableID;
     const rowID = parseInt(tableID) + 1;
-
-    const decode = TryDecodeToken(token, res);
-    if(decode != null) {
-        UpdateData(`Sheet1!B${rowID}:B${rowID}`, [["Ordered"]]);
-        UpdateData(`Sheet1!E${rowID}:E${rowID}`, [[dishes]]);
-        res.send(`<h1>Ordered</h1><h2>Thanks for ordering</h2>`)
+    if(key == jwtSecretKey && token != null) {
+        try {
+        const decode = jwt.verify(token, key);
+        console.log(decode);
+        if(decode.restaurantID != 1) {
+            res.send(`<h1>Access Denied</h1><h2>Wrong Restaurant</h2>`);
+        } else {
+            UpdateData(`Sheet1!B${rowID}:B${rowID}`, [["Ordered"]]);
+            UpdateData(`Sheet1!E${rowID}:E${rowID}`, [[dishes]]);
+            res.send(`<h1>Ordered</h1><h2>Thanks for ordering</h2>`)
+        }
+        
+        }
+        catch(err) {
+            res.send(`<h1>Access Denied</h1><h2>Unvalid Json Web Token(${err.message})</h2>`);
+        }
+    } else {
+        res.send(`<h1>Access Denied</h1><h2>Unvalid Json Web Token(invalid key)</h2>`);
     }
 });
 
-app.get("/form", async (req, res) => { 
-    const cookie = req.cookies;
-    console.log(cookie);
-    const token = cookie.token;
-
-    const decode = TryDecodeToken(token, res);
-    
-    if(decode != null) {
-        res.render("form");
-    }
-})
-
-
-app.get("/auth", async (req, res) => { 
-    const token = req.query.token;
-    SetCookie('token', token, 15, res);
-    return res.redirect(`/form`);
-})
-
-app.post("/menu/:id", async (req, res) => {
-    
+app.post("/order/:id", async (req, res) => {
     const id = req.params.id;
+    const key = req.query.key;
+    const token = req.query.token;
+    const location = req.query.location;
+    
+    
+    
 
-    const cookie = req.cookies;
-    const token = cookie.token;
-    const decode = TryDecodeToken(token, res);
-    if(decode != null) {
-        const decode = jwt.verify(token, jwtSecretKey);
-        const tableID = decode.tableID;
-        const rowID = parseInt(tableID) + 1;
-
-        const database = await GetData(`Sheet1!F${rowID}:F${rowID}`);
+    if(key == jwtSecretKey && token != null) {
+        try {
+        const decode = jwt.verify(token, key);
+        console.log(decode);
         
-        console.log(database);
-
-        if(database != undefined && database[0][0] == id) {
+        if(decode.restaurantID != 1) {
+            res.send(`<h1>Access Denied</h1><h2>Wrong Restaurant</h2>`);
+        } else {
             const info = {
+                id: id,
+                key: key,
+                token: token,
                 tableID: decode.tableID,
             }
-            res.render("menu", {info});
-        } else {
-            DeniedAccessWithMessage("Disabled URL.", res)
-        }
-
-        
-    }
-}); 
-
-
-
-app.post("/order", async (req, res) => {
-
-    const cookie = req.cookies;
-    const token = cookie.token;
-
-    const location = req.body.location;
-    const curLatitude = req.body.latitude;
-    const curLongitude = req.body.longitude;
-
-    const decode = TryDecodeToken(token, res);
-    if(decode != null) {
-        if(location != "true") {
-            DeniedAccessWithMessage("Sorry. We need to collect your geographic location to ensure the safety of the ordering process.", res);
-        } else {
-            const locationCheck = ValidateLocation(curLatitude, curLongitude);
-            const valid = (await locationCheck).isValid;
-
-            if(valid) {
+            if(location != "true") {
+                res.render("form", {info});
+            } else {
                 const tableID = decode.tableID;
                 const rowID = parseInt(tableID) + 1;
-                const database = await GetData(`Sheet1!C${rowID}:F${rowID}`)
-                if(parseInt(database[0][0]) > parseInt(database[0][1])) { // Check Quota
-                    
-                        UpdateData(`Sheet1!D${rowID}:D${rowID}`, [[parseInt(database[0][1]) + 1]]);
-                        const url = database[0][3];
-    
-                        const info = {
-                            tableID: decode.tableID,
-                        }
-                        return res.redirect(307, `/menu/${url}`);
-
+                const database = await GetData(`Sheet1!C${rowID}:D${rowID}`)
+                if(parseInt(database[0][0]) > parseInt(database[0][1])) {
+                    console.log(database);
+                    UpdateData(`Sheet1!D${rowID}:D${rowID}`, [[parseInt(database[0][1]) + 1]]);
+                    res.render("order", {info});
                 } else {
-                    DeniedAccessWithMessage("Quota Exceed", res);
+                    res.send(`<h1>Access Denied</h1><h2>Capacity Excess</h2>`);
                 }
-            } else {
-                DeniedAccessWithMessage("Wrong Location", res);
+                
             }
-            
         }
+        
+        }
+        catch(err) {
+            res.send(`<h1>Access Denied</h1><h2>Unvalid Json Web Token(${err.message})</h2>`);
+        }
+    } else {
+        res.send(`<h1>Access Denied</h1><h2>Unvalid Json Web Token(invalid key)</h2>`);
     }
     
     
@@ -296,6 +249,7 @@ app.get("/generate", async (req, res) => {
     const maxQuota = req.query.maxQuota;
     const rowID = parseInt(tableID) + 1;
     
+    console.log(req.query);
     const url = `Table${tableID}`;
 
     var hashUrl = "";
@@ -307,11 +261,10 @@ app.get("/generate", async (req, res) => {
     let data = {
         restaurantID: 1,
         tableID: tableID,
-        time: Date.now(),
     }
 
-    const token = jwt.sign(data, jwtSecretKey, { expiresIn: "1h" });
-    await UpdateData(`Sheet1!${rowID}:${rowID}`, [[tableID, "Ordering", maxQuota, 0, "", `${hashUrl}`]]);
+    const token = jwt.sign(data, jwtSecretKey, { expiresIn: "4h" });
+    await UpdateData(`Sheet1!${rowID}:${rowID}`, [[tableID, "Ordering", maxQuota, 0, "", `${rootURL}/order/${hashUrl}?token=${token}&key=${jwtSecretKey}`]]);
 
     let info = {
         tableID: tableID,
@@ -319,6 +272,7 @@ app.get("/generate", async (req, res) => {
         url: url,
         hashSalt: hashSalt,
         hashUrl: hashUrl,
+        key: jwtSecretKey,
         token: token,
     }
 
